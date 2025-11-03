@@ -256,7 +256,7 @@ def read_last_date_str_from_template_bytes(template_bytes: bytes, sheet_name: st
 # =========================
 # Streamlit App
 # =========================
-st.set_page_config(page_title="拉力值紀錄 (雲端版)", layout="wide")
+st.set_page_config(page_title="拉力值紀錄SGSOnly", layout="wide")
 
 if "authed_user" not in st.session_state:
     st.session_state.authed_user = None
@@ -283,7 +283,7 @@ if st.session_state.authed_user is None:
     login_form()
 
 st.sidebar.write(f"已登入：**{st.session_state.authed_user}**")
-st.title("拉力值紀錄 (Pull Test Data Sheet) — 雲端版（單檔）")
+st.title("拉力值紀錄SGSOnly")
 
 uploaded_file = st.file_uploader("上傳 Excel 範本 (.xlsx/.xlsm)", type=["xlsx", "xlsm"])
 sheet_name = st.text_input("工作表名稱（找不到會退回第一個可見表）", value="Data")
@@ -347,3 +347,4 @@ if st.button("新增紀錄並下載新檔"):
         )
     except Exception as e:
         st.error(str(e))
+
