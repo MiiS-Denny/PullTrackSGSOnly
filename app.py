@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-拉力值紀錄（Xbar-R）雲端版 - 單檔版本
+拉力值紀錄SGSOnly
 - 含登入驗證（PBKDF2-SHA256）
 - 上傳 Excel 範本，輸入 12 筆資料，下載 <原檔名>-out.xlsx
 - 自動維持你原本的公式與兩張圖表的資料範圍
@@ -347,4 +347,5 @@ if st.button("新增紀錄並下載新檔"):
         )
     except Exception as e:
         st.error(str(e))
+
 
