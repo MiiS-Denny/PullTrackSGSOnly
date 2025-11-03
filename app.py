@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-拉力值紀錄SGSOnly
+拉力值紀錄SGS_Only
 - 含登入驗證（PBKDF2-SHA256）
 - 上傳 Excel 範本，輸入 12 筆資料，下載 <原檔名>-out.xlsx
 - 自動維持你原本的公式與兩張圖表的資料範圍
@@ -256,7 +256,7 @@ def read_last_date_str_from_template_bytes(template_bytes: bytes, sheet_name: st
 # =========================
 # Streamlit App
 # =========================
-st.set_page_config(page_title="拉力值紀錄SGSOnly", layout="wide")
+st.set_page_config(page_title="拉力值紀錄SGS_Only", layout="wide")
 
 if "authed_user" not in st.session_state:
     st.session_state.authed_user = None
@@ -283,7 +283,7 @@ if st.session_state.authed_user is None:
     login_form()
 
 st.sidebar.write(f"已登入：**{st.session_state.authed_user}**")
-st.title("拉力值紀錄SGSOnly")
+st.title("拉力值紀錄SGS_Only")
 
 uploaded_file = st.file_uploader("上傳 Excel 範本 (.xlsx/.xlsm)", type=["xlsx", "xlsm"])
 sheet_name = st.text_input("工作表名稱（找不到會退回第一個可見表）", value="Data")
@@ -347,5 +347,6 @@ if st.button("新增紀錄並下載新檔"):
         )
     except Exception as e:
         st.error(str(e))
+
 
 
