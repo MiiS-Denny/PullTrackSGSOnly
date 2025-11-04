@@ -3,9 +3,9 @@
 拉力值紀錄SGS_Only
 - 含登入驗證（PBKDF2-SHA256）
 - 上傳 Excel 範本，輸入 12 筆資料，下載 <原檔名>-out.xlsx
-- 自動維持你原本的公式與兩張圖表的資料範圍
-- 新增：偵測同日多筆，需勾選確認後自動於日期加 -01 / -02 / ...
-- 新增：日期輸入可為 YYYY/MM/DD[-LL]、YYYYMMDD[LL]、YYYY/MM/DD、YYYYMMDD
+- 自動維持原本公式與兩張圖表的資料範圍
+- 同日多筆：需勾選確認後，自動於日期加 -01 / -02 / ...
+- 日期輸入可為 YYYY/MM/DD[-LL]、YYYYMMDDLL、YYYY/MM/DD、YYYYMMDD
 
 使用方式：
     pip install -r requirements.txt
@@ -108,7 +108,7 @@ def parse_date_input(s: str):
     if not s:
         return None, None  # 無輸入
     # 含 LL
-    m = re.fullmatch(r"(\d{4})[/-]?(\d{1,2})[/-]?(\d{1,2})[-/](\d{1,2})", s)
+    m = re.fullmatch(r"(\d{4})[\/\-]?(\d{1,2})[\/\-]?(\d{1,2})[\/\-](\d{1,2})", s)
     if not m:
         m = re.fullmatch(r"(\d{4})(\d{2})(\d{2})(\d{2})", s)
     if m:
@@ -117,7 +117,7 @@ def parse_date_input(s: str):
         return base, f"{ll:02d}"
 
     # 無 LL
-    m2 = re.fullmatch(r"(\d{4})[/-\.]?(\d{1,2})[/-\.]?(\d{1,2})", s)
+    m2 = re.fullmatch(r"(\d{4})[\/\.-]?(\d{1,2})[\/\.-]?(\d{1,2})", s)
     if m2:
         y, mo, d = map(int, m2.groups())
         base = f"{y:04d}/{mo:02d}/{d:02d}"
@@ -148,12 +148,12 @@ def scan_existing_ll(ws):
             ll = 0
         else:
             s = str(v).strip()
-            m = re.fullmatch(r"(\d{4})[/-]?(\d{1,2})[/-]?(\d{1,2})[-/](\d{1,2})", s)
+            m = re.fullmatch(r"(\d{4})[\/\-]?(\d{1,2})[\/\-]?(\d{1,2})[\/\-](\d{1,2})", s)
             if m:
                 y, mo, d, ll = map(int, m.groups())
                 base = f"{y:04d}/{mo:02d}/{d:02d}"
             else:
-                m2 = re.fullmatch(r"(\d{4})[/-\.]?(\d{1,2})[/-\.]?(\d{1,2})", s)
+                m2 = re.fullmatch(r"(\d{4})[\/\.-]?(\d{1,2})[\/\.-]?(\d{1,2})", s)
                 if m2:
                     y, mo, d = map(int, m2.groups())
                     base = f"{y:04d}/{mo:02d}/{d:02d}"
@@ -304,7 +304,7 @@ def read_last_date_str_from_template_bytes(template_bytes: bytes, sheet_name: st
         return v.strftime("%Y/%m/%d-00")
 
     s = str(v).strip()
-    m = re.fullmatch(r"(\d{4})[/-]?(\d{1,2})[/-]?(\d{1,2})[-/](\d{1,2})", s)
+    m = re.fullmatch(r"(\d{4})[\/\-]?(\d{1,2})[\/\-]?(\d{1,2})[\/\-](\d{1,2})", s)
     if m:
         y, mo, d, ll = m.groups()
         return f"{int(y):04d}/{int(mo):02d}/{int(d):02d}-{int(ll):02d}"
@@ -312,7 +312,7 @@ def read_last_date_str_from_template_bytes(template_bytes: bytes, sheet_name: st
     if m2:
         y, mo, d, ll = m2.groups()
         return f"{y}/{mo}/{d}-{ll}"
-    m3 = re.fullmatch(r"(\d{4})[-/\.]?(\d{1,2})[-/\.]?(\d{1,2})", s)
+    m3 = re.fullmatch(r"(\d{4})[\/\.-]?(\d{1,2})[\/\.-]?(\d{1,2})", s)
     if m3:
         y, mo, d = m3.groups()
         return f"{int(y):04d}/{int(mo):02d}/{int(d):02d}-00"
@@ -389,27 +389,22 @@ edited = st.data_editor(df, num_rows="fixed", use_container_width=True, key="inp
 need_confirm_multi = False
 dup_info = defaultdict(int)
 
-preview_rows = []
 for _, row in edited.iterrows():
     raw_date = str(row["Date (YYYY/MM/DD 或 YYYY/MM/DD-LL 皆可)"]).strip()
     if not raw_date or raw_date.lower() == "nan":
         continue
     try:
         base, ll = parse_date_input(raw_date)
-        preview_rows.append((base, ll))
         if ll is None:
-            # 無 LL -> 很可能會被自動編號；若同日輸入超過1筆就需要確認
             dup_info[base] += 1
             if dup_info[base] >= 2:
                 need_confirm_multi = True
         else:
-            # 指定了 LL；若同日輸入重複 LL，也需要確認
             key = (base, ll)
             dup_info[key] += 1
             if dup_info[key] >= 2:
                 need_confirm_multi = True
     except Exception:
-        # 先忽略，交由正式送出時拋錯
         pass
 
 if need_confirm_multi:
